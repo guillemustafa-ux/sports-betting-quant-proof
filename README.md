@@ -10,6 +10,7 @@ The point is not a winning model. There is none here and none is claimed. The po
 python -m venv .venv && .venv/Scripts/pip install -e ".[test]"   # Windows; on macOS/Linux use .venv/bin/pip
 python -m sbq                 # the audit on the committed synthetic league: writes RESULTS.md in about 12 seconds
 python -m pytest              # 84 tests, offline
+python scripts/seed_sweep.py  # the honest run on ten seeds, about 40 seconds
 python data/fetch_football_data.py                                       # optional: one real season, for your private use
 python -m sbq --csv data/raw/E0_2324.csv --out data/raw/RESULTS_E0_2324.md   # the same audit on it
 ```
@@ -42,6 +43,7 @@ Brier is the multiclass sum convention: squared error summed over home, draw and
 How to read it:
 
 - **The honest run "made" +10.2% on 961 bets, and it has no edge.** Scored against the true probabilities its bets are worth -0.4%, only 36% of them beat the closing line, and its mean CLV is -1.6%. The realized ROI is a draw 1.9 standard errors above its expectation. This is why a betting model is judged by CLV and calibration, not by its ROI over a season.
+- **The lucky draw was not picked.** The seed (20261031) has not changed since the commit that added the league (`git log -S'SEED = ' -- sbq/synthetic.py`). On ten seeds, the committed one and 1-9 (`python scripts/seed_sweep.py`), the honest run's realized ROI ranges from -10.0% to +12.1%, z from -1.61 to +1.87, expected ROI under the truth from -0.5% to +0.5%, and mean CLV from -1.6% to -0.8%: negative on all ten.
 - **The closing-price leak creates an edge that cannot be bet.** Given the closing price as a feature, a stacker fitted on the sample puts weight 0.87 on it (fitted in-sample, on the very results it is then scored on: a second leak of its own); 84% of its bets then beat the close, mean CLV +3.7%, expected ROI +5.9%. All of it comes from knowing where the line will close, which nobody knows when the bet is placed. The guard fails it: the closing line is timestamped at kickoff. Its realized ROI (+4.4% ± 8.9% on 462 bets) is below the honest run's lucky draw: on a few hundred bets, result noise hides even a real six-point edge.
 - **Random K-fold flatters the scores.** Ratings fitted on shuffled folds see matches played after the one they predict: Brier 0.6268 → 0.6246, log loss 1.0419 → 1.0382. On this league it does not move the expected ROI (-0.4% both); how much it does depends on how fast team strength drifts (2% a round here). The guard fails it: its features include results from after kickoff.
 - **The market is the benchmark, and it is hard to beat.** The de-vigged closing line scores within 0.0003 Brier of the truth; the honest model is 0.012 behind. The three de-vig methods tie here because the synthetic books apply their margin proportionally; on real books, which load the margin on longshots, Shin and power separate from the proportional method.
