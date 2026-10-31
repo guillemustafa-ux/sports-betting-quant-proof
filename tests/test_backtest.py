@@ -1,26 +1,13 @@
 """Walk-forward backtest, the two planted leaks, and the timestamp guard that catches them."""
 
-import pathlib
-
 import numpy as np
 import pandas as pd
 import pytest
 
 from sbq import backtest as bt
-from sbq import data
 
-FIXTURE = pathlib.Path(__file__).resolve().parents[1] / "data" / "synthetic_league.csv"
 FLAT = 1e9  # half-life in days long enough that every past match weighs the same
-
-
-@pytest.fixture(scope="module")
-def matches():
-    return data.load_matches(FIXTURE)
-
-
-@pytest.fixture(scope="module")
-def runs(matches):
-    return {mode: bt.run(matches, mode) for mode in bt.MODES}
+# `matches` and `runs` (the three modes on the committed synthetic league) come from conftest.py
 
 
 def _history():
