@@ -9,7 +9,7 @@ The point is not a winning model. There is none here and none is claimed. The po
 ```bash
 python -m venv .venv && .venv/Scripts/pip install -e ".[test]"   # Windows; on macOS/Linux use .venv/bin/pip
 python -m sbq                 # the audit on the committed synthetic league: writes RESULTS.md in about 12 seconds
-python -m pytest              # 82 tests, offline
+python -m pytest              # 83 tests, offline
 python data/fetch_football_data.py                                       # optional: one real season, for your private use
 python -m sbq --csv data/raw/E0_2324.csv --out data/raw/RESULTS_E0_2324.md   # the same audit on it
 ```

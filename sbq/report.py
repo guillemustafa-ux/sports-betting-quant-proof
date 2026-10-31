@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 
 from sbq import calibration
-from sbq.backtest import Config, Run
+from sbq.backtest import Run
 from sbq.devig import devig, overround
 
 LABELS = {
@@ -78,7 +78,7 @@ def _reliability(model: np.ndarray, close: np.ndarray, outcome) -> list[str]:
 
 def render(matches: pd.DataFrame, runs: dict[str, Run], source: str) -> str:
     honest = runs["honest"].predictions
-    cfg = Config()
+    cfg = runs["honest"].config
     cal_lines, forecasters = _calibration_table(honest)
     margin_open = np.mean([overround(r) for r in honest[[f"open_{s}" for s in SIDES]].to_numpy()])
     margin_close = np.mean([overround(r) for r in honest[[f"close_{s}" for s in SIDES]].to_numpy()])

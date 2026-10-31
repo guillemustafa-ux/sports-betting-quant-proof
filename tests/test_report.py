@@ -4,6 +4,7 @@ import pandas as pd
 
 from conftest import FIXTURE, ROOT
 from sbq import __main__ as cli
+from sbq import backtest as bt
 from sbq import report
 
 
@@ -31,6 +32,15 @@ def test_the_audit_table_flags_the_leaky_runs(matches, runs):
     assert "| pass |" in honest
     for label in ("| Leak: closing price in features", "| Leak: random K-fold"):
         assert "| FAIL |" in next(line for line in text.splitlines() if line.startswith(label))
+
+
+def test_the_report_prints_the_config_the_runs_used(matches):
+    cfg = bt.Config(min_team_matches=8, edge=0.05, method="shin")
+    runs = {mode: bt.run(matches.iloc[:300], mode, cfg) for mode in bt.MODES}
+    text = report.render(matches.iloc[:300], runs, source="x.csv")
+    assert "both teams need 8 known results first" in text
+    assert "when it exceeds 5%" in text
+    assert "CLV against the closing line, shin de-vig" in text
 
 
 def test_cli_writes_the_report_and_handles_data_without_truth(tmp_path, capsys):

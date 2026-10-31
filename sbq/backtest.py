@@ -53,6 +53,7 @@ class Run:
     predictions: pd.DataFrame
     bets: pd.DataFrame
     summary: dict = field(default_factory=dict)
+    config: Config = field(default_factory=Config)  # the settings this run used
 
 
 def rates(history: pd.DataFrame, home: str, away: str, at: pd.Timestamp,
@@ -182,7 +183,7 @@ def run(matches: pd.DataFrame, mode: str, cfg: Config = Config()) -> Run:
         "brier": calibration.brier(probs, pred.result), "log_loss": calibration.log_loss(probs, pred.result),
         "close_weight": pred.attrs["close_weight"],
     }
-    return Run(mode, pred, bets, summary)
+    return Run(mode, pred, bets, summary, cfg)
 
 
 def expected_roi(pred: pd.DataFrame, bets: pd.DataFrame) -> float | None:
