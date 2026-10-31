@@ -80,8 +80,9 @@ Every prediction carries two timestamps: `decision_time`, when the price is take
 - `sbq/synthetic.py` — the synthetic league.
 - `sbq/backtest.py` — ratings, walk-forward predictions, the two leaks, the guard, bet settlement.
 - `sbq/report.py`, `sbq/__main__.py` — `python -m sbq` renders `RESULTS.md`.
+- `scripts/seed_sweep.py` — the honest run on ten synthetic seeds.
 
-Dependencies: pandas, numpy, scipy. No betting or backtesting framework, on purpose: in an audit every line has to be readable.
+Dependencies: pandas, numpy, scipy. `RESULTS.md` was generated with numpy 2.5.4, scipy 1.18.1 and pandas 3.1.0 on Python 3.13, pinned in `requirements-lock.txt`; CI runs the suite on those pins and on the looser `pyproject.toml` ranges. No betting or backtesting framework, on purpose: in an audit every line has to be readable.
 
 ## Limits, stated plainly
 
