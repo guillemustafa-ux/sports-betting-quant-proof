@@ -1,0 +1,7 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+*.egg-info/
+# football-data.co.uk files are downloaded for private use and never committed (see README, "Data")
+data/raw/

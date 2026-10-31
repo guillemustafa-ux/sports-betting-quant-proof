@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["sbq"]
+
+[project]
+name = "sports-betting-quant-proof"
+version = "0.1.0"
+description = "Odds math, a Poisson match model, calibration against the closing market, CLV, and a backtest audit that catches closing-price and validation leaks."
+requires-python = ">=3.11"
+dependencies = ["pandas>=2.2", "numpy>=1.26", "scipy>=1.13"]
+
+[project.optional-dependencies]
+test = ["pytest>=8"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
