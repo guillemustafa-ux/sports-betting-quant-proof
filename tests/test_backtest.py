@@ -5,6 +5,7 @@ import pandas as pd
 import pytest
 
 from sbq import backtest as bt
+from sbq import data
 
 FLAT = 1e9  # half-life in days long enough that every past match weighs the same
 # `matches` and `runs` (the three modes on the committed synthetic league) come from conftest.py
@@ -38,9 +39,37 @@ def test_guard_rejects_any_feature_at_or_after_kickoff():
                        "feature_time": [kickoff - pd.Timedelta(days=2)]})
     bt.check_no_leak(ok)
     for bad in (ok.assign(feature_time=kickoff), ok.assign(feature_time=kickoff - pd.Timedelta(hours=1)),
-                ok.assign(decision_time=kickoff)):
+                ok.assign(feature_time=ok.decision_time), ok.assign(decision_time=kickoff)):
         with pytest.raises(bt.LeakError):
             bt.check_no_leak(bad)
+
+
+def _same_day_round(tmp_path, early_score):
+    # football-data.co.uk layout. Week 1: every team plays once. Week 2, the same Saturday:
+    # A v B at 12:30 and C v D at 15:00. C v D's price is taken on Friday at 15:00.
+    rows = [("12/08/2023", "15:00", "A", "C", 1, 0), ("12/08/2023", "15:00", "B", "D", 2, 2),
+            ("19/08/2023", "12:30", "A", "B", *early_score), ("19/08/2023", "15:00", "C", "D", 1, 1)]
+    df = pd.DataFrame(rows, columns=["Date", "Time", "HomeTeam", "AwayTeam", "FTHG", "FTAG"])
+    df["FTR"] = np.select([df.FTHG > df.FTAG, df.FTHG < df.FTAG], ["H", "A"], "D")
+    for col, price in {"PSH": 2.5, "PSD": 3.3, "PSA": 2.9, "PSCH": 2.5, "PSCD": 3.3, "PSCA": 2.9}.items():
+        df[col] = price
+    path = tmp_path / f"same_day_{early_score[0]}_{early_score[1]}.csv"
+    df.to_csv(path, index=False)
+    return data.load_matches(path)
+
+
+def test_an_earlier_kickoff_on_the_same_day_never_enters_a_later_prediction(tmp_path):
+    # The committed league plays every round at one kickoff, so this case needs its own fixture: the
+    # 12:30 result is known at 14:30 Saturday, after C v D's price was taken on Friday.
+    cfg = bt.Config(min_team_matches=1)
+    preds = []
+    for score in ((0, 0), (6, 0)):
+        pred = bt.predict(_same_day_round(tmp_path, score), "honest", cfg)
+        bt.check_no_leak(pred)
+        preds.append(pred.set_index(["home", "away"]).loc[("C", "D")])
+    cols = ["lam_h", "lam_a", "p_h", "p_d", "p_a"]
+    np.testing.assert_allclose(preds[0][cols].to_numpy(float), preds[1][cols].to_numpy(float), atol=0)
+    assert preds[0].feature_time == pd.Timestamp("2023-08-12 17:00")  # week 1 results only
 
 
 def test_honest_run_uses_only_data_from_before_each_kickoff(runs):

@@ -9,7 +9,7 @@ The point is not a winning model. There is none here and none is claimed. The po
 ```bash
 python -m venv .venv && .venv/Scripts/pip install -e ".[test]"   # Windows; on macOS/Linux use .venv/bin/pip
 python -m sbq                 # the audit on the committed synthetic league: writes RESULTS.md in about 12 seconds
-python -m pytest              # 81 tests, offline
+python -m pytest              # 82 tests, offline
 python data/fetch_football_data.py                                       # optional: one real season, for your private use
 python -m sbq --csv data/raw/E0_2324.csv --out data/raw/RESULTS_E0_2324.md   # the same audit on it
 ```
@@ -48,7 +48,7 @@ How to read it:
 
 ## The leak guard
 
-Every prediction carries two timestamps: `decision_time`, when the price is taken, and `feature_time`, the latest timestamp of any data it used. Results are known at kickoff + 2 hours, the pre-closing price is taken a day before kickoff, the closing line exists only at kickoff. `check_no_leak` raises if any `feature_time >= decision_time` or any `decision_time >= kickoff`. The tests run it on all three runs, and also scramble every result after a match's decision time to prove the honest prediction for that match does not move while the random K-fold one does.
+Every prediction carries two timestamps: `decision_time`, when the price is taken, and `feature_time`, the latest timestamp of any data it used. Results are known at kickoff + 2 hours, the pre-closing price is taken a day before kickoff, the closing line exists only at kickoff. `check_no_leak` raises if any `feature_time >= decision_time` (equality included) or any `decision_time >= kickoff`. The tests run it on all three runs, and also scramble every result after a match's decision time to prove the honest prediction for that match does not move while the random K-fold one does.
 
 ## The odds math
 
@@ -83,6 +83,7 @@ Dependencies: pandas, numpy, scipy. No betting or backtesting framework, on purp
 
 - The headline numbers are synthetic. They show the mechanisms (what each leak does, how noisy ROI is, what CLV measures) where the truth is known; they say nothing about the edge available in any real market.
 - The rating model is a simple attack/defence average with time decay, not a fitted Dixon-Coles model; it is there to be audited, not to win. Independent Poisson suits goals; high-scoring sports (basketball points) need a normal or negative-binomial model of totals.
+- The synthetic league plays each round at a single kickoff time, so on it a same-day leak (a 12:30 result entering the 15:00 prediction) could not show. A dedicated test builds two Saturday matches and checks the earlier result never reaches the later one, whose price was taken on Friday.
 - The pre-closing price is assumed to be taken one day before kickoff. football-data.co.uk collects it on Friday or Tuesday afternoon before a round, so for some matches the real lead is longer.
 - Flat one-unit stakes. Kelly or any other staking is out of scope.
 - One CLV definition (taken odds against the de-vigged close). No in-play markets, no Asian handicap, no limits or bet acceptance.
