@@ -13,6 +13,8 @@ Bets: one unit at the pre-closing price on the outcome with the highest expected
 
 The closing-price stacker put weight 0.87 on the leaked column.
 
+Brier is the multiclass sum convention: the squared error summed over home, draw and away, 0 perfect, 2 worst. Log loss is in nats.
+
 ## Calibration against the market (1X2, honest model's matches)
 
 | Forecaster | Brier | Log loss |
@@ -24,7 +26,7 @@ The closing-price stacker put weight 0.87 on the leaked column.
 | Closing market, power de-vig | 0.6151 | 1.0253 |
 | Truth (synthetic only) | 0.6145 | 1.0244 |
 
-Over/under 2.5 goals on 1080 matches: model Brier 0.4520, closing market Brier 0.4362.
+Over/under 2.5 goals on 1080 matches: model Brier 0.4520, closing market Brier 0.4362 (summed over both sides, 0-2; 0.2260 and 0.2181 in the one-outcome 0-1 convention).
 
 ## Reliability: honest model vs. closing market (every outcome forecast, 10 bins)
 

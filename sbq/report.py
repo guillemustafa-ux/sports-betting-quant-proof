@@ -58,8 +58,10 @@ def _over_under_line(pred: pd.DataFrame) -> str:
     model = np.column_stack([ou.p_over, 1 - ou.p_over])
     close = np.column_stack([ou.fair_over, 1 - ou.fair_over])
     y = 1 - ou.over.to_numpy()  # index 0 = over happened
-    return (f"Over/under 2.5 goals on {len(ou)} matches: model Brier {calibration.brier(model, y):.4f}, "
-            f"closing market Brier {calibration.brier(close, y):.4f}.")
+    b_model, b_close = calibration.brier(model, y), calibration.brier(close, y)
+    return (f"Over/under 2.5 goals on {len(ou)} matches: model Brier {b_model:.4f}, "
+            f"closing market Brier {b_close:.4f} (summed over both sides, 0-2; "
+            f"{b_model / 2:.4f} and {b_close / 2:.4f} in the one-outcome 0-1 convention).")
 
 
 def _reliability(model: np.ndarray, close: np.ndarray, outcome) -> list[str]:
@@ -96,6 +98,9 @@ def render(matches: pd.DataFrame, runs: dict[str, Run], source: str) -> str:
         *_audit_table(runs),
         "",
         f"The closing-price stacker put weight {runs['closing_leak'].summary['close_weight']:.2f} on the leaked column.",
+        "",
+        "Brier is the multiclass sum convention: the squared error summed over home, draw and away, "
+        "0 perfect, 2 worst. Log loss is in nats.",
         "",
         "## Calibration against the market (1X2, honest model's matches)",
         "",

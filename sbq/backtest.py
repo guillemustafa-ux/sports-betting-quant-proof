@@ -6,7 +6,8 @@ Modes:
 - closing_leak: the same ratings, plus the de-vigged closing price as a second feature, the way a
   closing-odds column slips into a feature table. A one-weight stacker blends the two, fitted by log
   loss on the whole sample, as a model trained with that column would; it learns to lean on the close.
-  The closing line only exists at kickoff.
+  The closing line only exists at kickoff. Fitting the weight in-sample, on the same results the run is
+  then scored on, is a second leak of its own; the guard only needs the first to fail the run.
 - random_cv: ratings fitted on shuffled K-fold training sets, so matches played after the one being
   predicted inform its rating ("random instead of chronological validation").
 

@@ -34,6 +34,14 @@ def test_the_audit_table_flags_the_leaky_runs(matches, runs):
         assert "| FAIL |" in next(line for line in text.splitlines() if line.startswith(label))
 
 
+def test_the_report_states_the_brier_convention(matches, runs):
+    text = _rendered(matches, runs)
+    assert "Brier is the multiclass sum convention" in text
+    ou = next(line for line in text.splitlines() if line.startswith("Over/under 2.5"))
+    model, close = (float(x.split(",")[0].split(" ")[0]) for x in ou.split("Brier ")[1:3])
+    assert f"{model / 2:.4f} and {close / 2:.4f} in the one-outcome 0-1 convention" in ou
+
+
 def test_the_report_prints_the_config_the_runs_used(matches):
     cfg = bt.Config(min_team_matches=8, edge=0.05, method="shin")
     runs = {mode: bt.run(matches.iloc[:300], mode, cfg) for mode in bt.MODES}
